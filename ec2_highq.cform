@@ -1,0 +1,114 @@
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+
+	  "Description": "This template creates an Ubuntu EC2 instance", 
+  	  
+  	  "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "EC2 Network Configuration"
+                    },
+                    "Parameters": [
+                        "VpcId",
+                        "SubnetId"         
+                    ]
+                },            
+                {
+                    "Label": {
+                        "default": "EC2 Instance Configuration"
+                    },
+                    "Parameters": [
+                    	"InstanceType",
+                        "ServerName",
+                        "SecurityGroupId",
+                        "KeyName",
+                        "UbuntuAMI"       
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+            	"VpcId": {
+            		"default" : "Enter the VPC where to host the Server"
+            	},
+
+                "Subnet": {
+                	"default": "Subnet id"
+                },
+
+                "ServerName" : {
+                	"default": "Server Name"
+                },
+
+                "UbuntuAMI" : {
+                	"default": "Ubuntu AMI for the region"
+                },
+
+                "SecurityGroup" : {
+                	"default": "SecurityGroup"
+                },
+
+                "KeyName" : {
+                	"default": "Select the appropriate KeyPair for this instance"
+                }               
+            }
+        }
+    },
+    "Parameters": {
+
+    	"VpcId": {
+    		"Description": "Enter the VPC where to configure the Server",
+    		"Type": "List<AWS::EC2::VPC::Id>"
+    	},
+
+        "SubnetId": {
+        	"Description": "Select the Subnet to deploy the Server",
+        	"Type": "List<AWS::EC2::Subnet::Id>"
+        },
+
+        "ServerName": {
+        	"Description": "Enter the Server Name",
+        	"Type": "String"
+        },
+
+        "UbuntuAMI": {
+        	"Type":  "String"
+        },
+
+        "SecurityGroupId": {
+        	"Description" : "Select the Security Group to be used with this instance",
+        	"Type": "AWS::EC2::SecurityGroup::Id"
+        },
+
+        "KeyName": {
+        	"Description" : "Select a valid Key Pair to connect to this instance",
+        	"Type": "AWS::EC2::KeyPair::KeyName"
+        },
+
+        "InstanceType": {
+            "Description": "Select the appropriate instance type",
+            "Type": "String",
+            "Default": "t2.small",
+            "AllowedValues": ["t2.small", "t2.medium"],
+            "ConstraintDescription": "Must be a valid EC2 instance type"
+        }            
+
+    },
+
+   	"Resources": {
+
+		"UbuntuEC2Instance" : {
+			"Type" : "AWS::EC2::Instance",
+			"Properties" : {
+				"ImageId" : { "Ref" : "UbuntuAMI" },
+		            "KeyName" : { "Ref" : "KeyName" },
+		            "SecurityGroupIds" : [{ "Ref" : "SecurityGroupId"}],
+		            "SubnetId" : { "Fn::Select" : [ "0", { "Ref" : "SubnetId"}]},
+		            "InstanceType" : { "Ref" : "InstanceType" },    
+		            "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : { "Ref" : "ServerName"}}]
+		    }
+		}
+
+	}
+}	
