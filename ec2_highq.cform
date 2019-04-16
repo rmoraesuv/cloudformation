@@ -1,9 +1,9 @@
 {
-	"AWSTemplateFormatVersion" : "2010-09-09",
+    "AWSTemplateFormatVersion" : "2010-09-09",
 
-	  "Description": "This template creates an Ubuntu EC2 instance", 
-  	  
-  	  "Metadata": {
+      "Description": "This template creates an Ubuntu EC2 instance", 
+      
+      "Metadata": {
         "AWS::CloudFormation::Interface": {
             "ParameterGroups": [
                 {
@@ -20,8 +20,7 @@
                         "default": "EC2 Instance Configuration"
                     },
                     "Parameters": [
-                    	"InstanceType",
-                        "ServerName",
+                        "InstanceType",
                         "SecurityGroupId",
                         "KeyName",
                         "UbuntuAMI"       
@@ -29,61 +28,52 @@
                 }
             ],
             "ParameterLabels": {
-            	"VpcId": {
-            		"default" : "Enter the VPC where to host the Server"
-            	},
-
-                "Subnet": {
-                	"default": "Subnet id"
+                "VpcId": {
+                    "default" : "Enter the VPC where to host the Server"
                 },
 
-                "ServerName" : {
-                	"default": "Server Name"
+                "Subnet": {
+                    "default": "Subnet id"
                 },
 
                 "UbuntuAMI" : {
-                	"default": "Ubuntu AMI for the region"
+                    "default": "Ubuntu AMI for the region"
                 },
 
                 "SecurityGroup" : {
-                	"default": "SecurityGroup"
+                    "default": "SecurityGroup"
                 },
 
                 "KeyName" : {
-                	"default": "Select the appropriate KeyPair for this instance"
+                    "default": "Select the appropriate KeyPair for this instance"
                 }               
             }
         }
     },
     "Parameters": {
 
-    	"VpcId": {
-    		"Description": "Enter the VPC where to configure the Server",
-    		"Type": "List<AWS::EC2::VPC::Id>"
-    	},
-
-        "SubnetId": {
-        	"Description": "Select the Subnet to deploy the Server",
-        	"Type": "List<AWS::EC2::Subnet::Id>"
+        "VpcId": {
+            "Description": "Enter the VPC where to configure the Server",
+            "Type": "List<AWS::EC2::VPC::Id>"
         },
 
-        "ServerName": {
-        	"Description": "Enter the Server Name",
-        	"Type": "String"
+        "SubnetId": {
+            "Description": "Select the Subnet to deploy the Server",
+            "Type": "List<AWS::EC2::Subnet::Id>"
         },
 
         "UbuntuAMI": {
-        	"Type":  "String"
+            "Type":  "String"
         },
 
         "SecurityGroupId": {
-        	"Description" : "Select the Security Group to be used with this instance",
-        	"Type": "AWS::EC2::SecurityGroup::Id"
+            "Description" : "Select the Security Group of the Bastion Host",
+            "Type": "AWS::EC2::SecurityGroup::Id"
         },
 
         "KeyName": {
-        	"Description" : "Select a valid Key Pair to connect to this instance",
-        	"Type": "AWS::EC2::KeyPair::KeyName"
+            "Description" : "Select a valid Key Pair to connect to this instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
         },
 
         "InstanceType": {
@@ -96,19 +86,39 @@
 
     },
 
-   	"Resources": {
+    "Resources": {
 
-		"UbuntuEC2Instance" : {
-			"Type" : "AWS::EC2::Instance",
-			"Properties" : {
-				"ImageId" : { "Ref" : "UbuntuAMI" },
-		            "KeyName" : { "Ref" : "KeyName" },
-		            "SecurityGroupIds" : [{ "Ref" : "SecurityGroupId"}],
-		            "SubnetId" : { "Fn::Select" : [ "0", { "Ref" : "SubnetId"}]},
-		            "InstanceType" : { "Ref" : "InstanceType" },    
-		            "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : { "Ref" : "ServerName"}}]
-		    }
-		}
+        "EC2SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow access to Bastion Host",
+                "VpcId": { "Fn::Select" : [ "0", { "Ref" : "VpcId"}]},
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "6",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "SourceSecurityGroupId" : { "Ref" : "SecurityGroupId" },
+                        "Description": "Bastion Hosts"
+                    }  
+                ],
 
-	}
-}	
+            "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : "sg_highq"}]
+            }
+        },
+
+
+        "UbuntuEC2Instance" : {
+            "Type" : "AWS::EC2::Instance",
+            "Properties" : {
+                "ImageId" : { "Ref" : "UbuntuAMI" },
+                    "KeyName" : { "Ref" : "KeyName" },
+                    "SecurityGroupIds" : [{ "Ref" : "SecurityGroupId"}],
+                    "SubnetId" : { "Fn::Select" : [ "0", { "Ref" : "SubnetId"}]},
+                    "InstanceType" : { "Ref" : "InstanceType" },    
+                    "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : "HighQ"}]
+            }
+        }
+
+    }
+}   
