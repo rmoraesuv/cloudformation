@@ -150,6 +150,7 @@
            "AvailabilityZone" : { "Fn::Select" : [ "0", { "Ref" : "AvailabilityZones"}]},
            "VpcId": { "Ref" : "VPC" },
            "CidrBlock": { "Ref" : "PublicSubnet1CIDR"},
+           "MapPublicIpOnLaunch" : "True",
            "Tags": [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : "Public1"}]
          },
          "DependsOn" : "VPC"
@@ -161,6 +162,7 @@
            "AvailabilityZone" : { "Fn::Select" : [ "1", { "Ref" : "AvailabilityZones"}]},
            "VpcId": { "Ref" : "VPC" },
            "CidrBlock": { "Ref" : "PublicSubnet2CIDR"},
+           "MapPublicIpOnLaunch" : "True",
            "Tags": [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"}}, { "Key" : "Name", "Value" : "Public2"}]
          },
          "DependsOn" : "VPC"
